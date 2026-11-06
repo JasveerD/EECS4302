@@ -1,0 +1,3 @@
+/bin/
+src/antlr/*
+!src/antlr/Expr.g4

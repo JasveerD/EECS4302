@@ -1,0 +1,17 @@
+module m1 {
+    var int1 int
+    var bool1 bool
+
+    int1 = 3
+    bool1 = true
+
+    % '==' and '!=' are only for numberical comparisons
+    if (bool1) {
+        int1 = 2
+    } else if (bool2 && true) {
+        int1 = int1 * 2
+    } else {
+        int1 = -5
+    }
+
+}
