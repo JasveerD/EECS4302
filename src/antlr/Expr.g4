@@ -7,15 +7,18 @@ grammar Expr;
 prog: (module_declaration)* 'main' '(' (variable_declaration|expression)* ')' EOF #Program
     ;
 
+// you can only declare variables in a module, all assignments occur in the main method
 module_declaration: 'module' ID '{' (variable_declaration)* '}' #ModuleDeclaration
     ;
 
+// variables can be assigned a 'module' type as well
 variable_declaration: 'var' ID type #VariableDeclaration
     ;
 
 expression: operation
     | variable_assignment
     | conditional
+    | loop
     ;
 
 operation: arithmetic_operation
@@ -30,7 +33,7 @@ arithmetic_operation: '(' arithmetic_operation ')'  #ParenthesizedArithmetic
     | arithmetic_operation '+' arithmetic_operation #Addition
     | arithmetic_operation '-' arithmetic_operation #Subtraction
     | NUM                                           #Integer
-    | generalized_id                                #IntegerVariable
+    | nested_id                                #IntegerVariable
     ;
 
 relational_operation: '(' relational_operation ')'      #ParenthesizedRelational
@@ -50,13 +53,14 @@ logical_operation: '(' logical_operation ')'    #ParenthesizedLogical
     | logical_operation '<=>' logical_operation #Biconditional
     | relational_operation                      #RelationalOperationDeclaration
     | BOOL                                      #Boolean
-    | generalized_id                            #BooleanVariable
+    | nested_id                            #BooleanVariable
     ;
 
-variable_assignment: generalized_id '=' operation
+variable_assignment: nested_id '=' operation
     ;
 
-generalized_id: ID ('.' ID)*
+// used to retrieve variables from module variables (like class attributes in Java)
+nested_id: ID ('.' ID)*
     ;
 
 conditional: if_block ('else' if_block)* ('else' body)?
@@ -66,6 +70,16 @@ if_block: 'if' '(' logical_operation ')' body
     ;
 
 body: '{' (variable_declaration|expression)* '}'
+    ;
+
+loop: for | while
+    ;
+
+// takes a starting number, an ending number, and an increment/decrement value
+for: 'for' '(' arithmetic_operation ',' arithmetic_operation ',' arithmetic_operation ')' body
+    ;
+
+while: 'while' '(' logical_operation ')'  body
     ;
 
 type: 'int'

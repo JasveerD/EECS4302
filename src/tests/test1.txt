@@ -10,6 +10,7 @@ module m2 {
 main(
     m1.int1 = 3
     m1.bool1 = true
+    var tempint int
 
     % '==' and '!=' are only for numberical comparisons
     if (m1.bool1) {
@@ -22,5 +23,13 @@ main(
 
     m2.modvar = m1
     m2.modvar.int1 = 5
+
+    for (m1.int1, 10, 3) {
+        tempint = tempint + 1
+    }
+
+    while (m1.int1 > 0) {
+        m1.int1 = m1.int1 - 1
+    }
 )
 
