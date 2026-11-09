@@ -4,23 +4,23 @@ grammar Expr;
     package antlr;
 }
 
-prog: (module_declaration)* EOF #Program
+prog: (module_declaration)* 'main' '(' (variable_declaration|expression)* ')' EOF #Program
     ;
 
-module_declaration: 'module' ID '{' (variable_declaration|expression)* '}' #ModuleDeclaration
+module_declaration: 'module' ID '{' (variable_declaration)* '}' #ModuleDeclaration
     ;
 
 variable_declaration: 'var' ID type #VariableDeclaration
     ;
 
-expression: operation       #OperationDeclaration
-    | variable_assignment   #VariableAssignment
-    | conditional           #ConditionalDeclaration
+expression: operation
+    | variable_assignment
+    | conditional
     ;
 
-operation: arithmetic_operation #ArithmeticOperation
-    | relational_operation      #RelationalOperation
-    | logical_operation         #LogicalOperation
+operation: arithmetic_operation
+    | relational_operation
+    | logical_operation
     ;
 
 arithmetic_operation: '(' arithmetic_operation ')'  #ParenthesizedArithmetic
@@ -30,7 +30,7 @@ arithmetic_operation: '(' arithmetic_operation ')'  #ParenthesizedArithmetic
     | arithmetic_operation '+' arithmetic_operation #Addition
     | arithmetic_operation '-' arithmetic_operation #Subtraction
     | NUM                                           #Integer
-    | ID                                            #IntegerVariable
+    | generalized_id                                #IntegerVariable
     ;
 
 relational_operation: '(' relational_operation ')'      #ParenthesizedRelational
@@ -50,13 +50,19 @@ logical_operation: '(' logical_operation ')'    #ParenthesizedLogical
     | logical_operation '<=>' logical_operation #Biconditional
     | relational_operation                      #RelationalOperationDeclaration
     | BOOL                                      #Boolean
-    | ID                                        #BooleanVariable
+    | generalized_id                            #BooleanVariable
     ;
 
-variable_assignment: ID '=' operation
+variable_assignment: generalized_id '=' operation
     ;
 
-conditional: 'if' '(' logical_operation ')' body ('else' 'if' '(' logical_operation ')' body)* ('else' body)?
+generalized_id: ID ('.' ID)*
+    ;
+
+conditional: if_block ('else' if_block)* ('else' body)?
+    ;
+
+if_block: 'if' '(' logical_operation ')' body
     ;
 
 body: '{' (variable_declaration|expression)* '}'
@@ -64,6 +70,7 @@ body: '{' (variable_declaration|expression)* '}'
 
 type: 'int'
     | 'bool'
+    | 'module'
     ;
 
 BOOL: 'true' | 'false';
