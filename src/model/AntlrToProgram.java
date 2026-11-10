@@ -15,6 +15,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class AntlrToProgram extends ExprBaseVisitor<Program> {
 
     public List<String> semanticErrors; // to be accessed by the main application program
+    public Map<String, String> varTypes; // variable name -> type, exposed for HTML output
 
     @Override
     public Program visitProgram(ExprParser.ProgramContext ctx) {
@@ -34,6 +35,9 @@ public class AntlrToProgram extends ExprBaseVisitor<Program> {
                 }
             }
         }
+
+        // expose varTypes so the main app can pass it to the HTML generator
+        this.varTypes = exprVisitor.varTypes;
 
         // use the AntlrToExpression List and Map to initialize default values for each variable
         prog.varsInOrder = exprVisitor.vars;
