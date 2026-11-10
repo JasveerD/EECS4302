@@ -24,9 +24,18 @@ public class For extends Expression {
         int endInt = this.end.evaluate(p);
         int stepInt = this.step.evaluate(p);
 
-        for (int i = startInt; i != endInt; i += stepInt) {
-            for (Expression expr : this.expressions) {
-                expr.execute(p);
+        // choose which way to loop based on whether the start is bigger or smaller than the end boundary
+        if (startInt < endInt) {
+            for (int i = startInt; i <= endInt; i += stepInt) {
+                for (Expression expr : this.expressions) {
+                    expr.execute(p);
+                }
+            }
+        } else if (startInt > endInt) {
+            for (int i = startInt; i >= endInt; i += stepInt) {
+                for (Expression expr : this.expressions) {
+                    expr.execute(p);
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ public class BinaryArithmetic extends ArithmeticOperation {
         } else if (operator.equals("+")) {
             return this.left.evaluate(p) + this.right.evaluate(p);
         } else if (operator.equals("-")){
-            return this.left.evaluate(p) * this.right.evaluate(p);
+            return this.left.evaluate(p) - this.right.evaluate(p);
         }
         return 0;
     }

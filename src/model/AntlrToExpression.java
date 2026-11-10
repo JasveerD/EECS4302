@@ -91,7 +91,17 @@ public class AntlrToExpression extends ExprBaseVisitor<Expression> {
     public Expression visitVariableAssignment(VariableAssignmentContext ctx) {
         String id = ctx.nested_id().getText();
         Assignment assignVar = new Assignment(id);
-        Expression value = this.visit(ctx.operation());
+
+        // a lone variable assignment (x = y) would default to evaluating y as arithmetic based on the grammar
+        // explicitly check whether it is the case before visiting it normally
+        String rhs = ctx.operation().getText();
+        Expression value;
+        if ("bool".equals(varTypes.get(rhs))) {
+            value = new BooleanVariable(rhs);
+        } else {
+            value = this.visit(ctx.operation());
+        }
+
         Token idToken = ctx.nested_id().getStart();
         if (!varTypes.containsKey(id)) {
             semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + ": variable `" + id + "` has not been declared");
@@ -143,7 +153,7 @@ public class AntlrToExpression extends ExprBaseVisitor<Expression> {
         String id = ctx.getText();
         Token idToken = ctx.getStart();
         if (!varTypes.containsKey(id)) {
-            semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + 1 + ": variable `" + id + "` has not been declared");
+            semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + ": variable `" + id + "` has not been declared");
         } else if (!varTypes.get(id).equals("int")) {
             semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + ": type mismatch, trying to assign a boolean to an int");
         }
@@ -215,7 +225,7 @@ public class AntlrToExpression extends ExprBaseVisitor<Expression> {
         String id = ctx.getText();
         Token idToken = ctx.getStart();
         if (!varTypes.containsKey(id)) {
-            semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + 1 + ": variable `" + id + "` has not been declared");
+            semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + ": variable `" + id + "` has not been declared");
         } else if (!varTypes.get(id).equals("bool")) {
             semanticErrors.add("Error at " + idToken.getLine() + "," + idToken.getCharPositionInLine() + ": type mismatch, trying to assign an int to a boolean");
         }
@@ -258,12 +268,15 @@ public class AntlrToExpression extends ExprBaseVisitor<Expression> {
     public Expression visitFor(ForContext ctx) {
         List<ArithmeticOperation> loopParams = new ArrayList<>();
         for (Arithmetic_operationContext op : ctx.arithmetic_operation()) {
-            loopParams.add((ArithmeticOperation) this.visit(op));
+            loopParams.add((ArithmeticOperation) this.visit(op));   // instantiates the start, end, and step vars
         }
+
         For forloop = new For(loopParams.get(0), loopParams.get(1), loopParams.get(2));
 
         for (ParseTree child : ctx.body().children) {
-            forloop.expressions.add(this.visit(child));
+            if (child instanceof Variable_declarationContext || child instanceof ExpressionContext) {
+                forloop.expressions.add(this.visit(child));
+            }
         }
 
         return forloop;
@@ -274,7 +287,9 @@ public class AntlrToExpression extends ExprBaseVisitor<Expression> {
         While whileloop = new While((LogicalOperation) this.visit(ctx.logical_operation()));
 
         for (ParseTree child : ctx.body().children) {
-            whileloop.expressions.add(this.visit(child));
+            if (child instanceof Variable_declarationContext || child instanceof ExpressionContext) {
+                whileloop.expressions.add(this.visit(child));
+            }
         }
 
         return whileloop;

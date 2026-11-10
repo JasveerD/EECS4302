@@ -27,7 +27,7 @@ public class ExpressionApp {
 				AntlrToProgram progVisitor = new AntlrToProgram();
 				Program prog = progVisitor.visit(AST);
 				if (progVisitor.semanticErrors.isEmpty()) {
-
+					prog.execute(prog);
 				} else {
 					for (String err : progVisitor.semanticErrors) {
 						System.out.println(err);

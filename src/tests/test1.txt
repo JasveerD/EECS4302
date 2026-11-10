@@ -8,7 +8,7 @@ main(
     m1.bool1 = true
     var tempint int
 
-    % '==' and '!=' are only for numberical comparisons
+    % '==' and '!=' are only for numerical comparisons
     if (m1.bool1) {
         m1.int1 = 2
     } else if (m1.bool1 && true) {
