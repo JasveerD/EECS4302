@@ -12,37 +12,35 @@ module_declaration: 'module' ID '{' (variable_declaration)* '}' #ModuleDeclarati
     ;
 
 // variables can be assigned a 'module' type as well
-variable_declaration: 'var' ID type #VariableDeclaration
+variable_declaration: 'var' ID type  #VariableDeclaration
     ;
 
-expression: operation
-    | variable_assignment
+type: 'int' | 'bool'
+    ;
+
+
+expression: variable_assignment
     | conditional
     | loop
     ;
 
 operation: arithmetic_operation
-    | relational_operation
     | logical_operation
     ;
 
-arithmetic_operation: '(' arithmetic_operation ')'  #ParenthesizedArithmetic
-    | '-' arithmetic_operation                      #Negative
-    | arithmetic_operation '*' arithmetic_operation #Multiplication
-    | arithmetic_operation '/' arithmetic_operation #Division
-    | arithmetic_operation '+' arithmetic_operation #Addition
-    | arithmetic_operation '-' arithmetic_operation #Subtraction
-    | NUM                                           #Integer
-    | nested_id                                #IntegerVariable
+// visitNegative will be treated as a special case of Subtraction
+arithmetic_operation: '(' arithmetic_operation ')'                  #ParenthesizedArithmetic
+    | '-' arithmetic_operation                                      #Negative
+    | arithmetic_operation mul_div_operator  arithmetic_operation   #MultiplicationDivision
+    | arithmetic_operation add_sub_operator arithmetic_operation    #AdditionSubtraction
+    | NUM                                                           #IntegerLiteral
+    | nested_id                                                     #IntegerVariable
     ;
 
-relational_operation: '(' relational_operation ')'      #ParenthesizedRelational
-    | arithmetic_operation '==' arithmetic_operation    #Equality
-    | arithmetic_operation '!=' arithmetic_operation    #Inequality
-    | arithmetic_operation '<=' arithmetic_operation    #LessOrEqual
-    | arithmetic_operation '>=' arithmetic_operation    #GreaterOrEqual
-    | arithmetic_operation '<' arithmetic_operation     #LessThan
-    | arithmetic_operation '>' arithmetic_operation     #GreaterThan
+mul_div_operator: '*' | '/'
+    ;
+
+add_sub_operator: '+' | '-'
     ;
 
 logical_operation: '(' logical_operation ')'    #ParenthesizedLogical
@@ -52,21 +50,27 @@ logical_operation: '(' logical_operation ')'    #ParenthesizedLogical
     | logical_operation '->' logical_operation  #Implication
     | logical_operation '<=>' logical_operation #Biconditional
     | relational_operation                      #RelationalOperationDeclaration
-    | BOOL                                      #Boolean
-    | nested_id                            #BooleanVariable
+    | BOOL                                      #BooleanLiteral
+    | nested_id                                 #BooleanVariable
     ;
 
-variable_assignment: nested_id '=' operation
+relational_operation: arithmetic_operation relational_operator arithmetic_operation #RelationalOperation
+    ;
+
+relational_operator: '==' | '!=' | '<=' | '>=' | '<' | '>'
+    ;
+
+variable_assignment: nested_id '=' operation    #VariableAssignment
     ;
 
 // used to retrieve variables from module variables (like class attributes in Java)
-nested_id: ID ('.' ID)*
+nested_id: ID ('.' ID)?
     ;
 
 conditional: if_block ('else' if_block)* ('else' body)?
     ;
 
-if_block: 'if' '(' logical_operation ')' body
+if_block: 'if' '(' logical_operation ')' body   #IfBlock
     ;
 
 body: '{' (variable_declaration|expression)* '}'
@@ -80,11 +84,6 @@ for: 'for' '(' arithmetic_operation ',' arithmetic_operation ',' arithmetic_oper
     ;
 
 while: 'while' '(' logical_operation ')'  body
-    ;
-
-type: 'int'
-    | 'bool'
-    | 'module'
     ;
 
 BOOL: 'true' | 'false';
